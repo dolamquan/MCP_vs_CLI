@@ -1,8 +1,6 @@
-
-Backend:
-
 # File Structure
 
+```txt
 tokenlens-backend/
 ├── src/
 │   ├── server.ts - Responsible for starting the backend server
@@ -28,10 +26,11 @@ tokenlens-backend/
 ├── tsconfig.json
 ├── Dockerfile
 └── README.md
-
+```
 
 # Backend Flow
 
+```txt
 Frontend
    ↓
 server.ts
@@ -49,11 +48,13 @@ services/
 database/repositories/
    ↓
 database
+```
 
+## Design Phases
 
-## Design Phases:
+### Phase 1: Make the Backend Run -> Health Check
 
-### Phase 1: Make the Backend Run -> Health check
+```txt
 src/
 ├── server.ts
 ├── app.ts
@@ -62,11 +63,13 @@ src/
 │   └── health.routes.ts
 └── controllers/
     └── health.controller.ts
+```
 
-- Goal: GET /api/health
+- Goal: `GET /api/health`
 
 ### Phase 2: Build Core Comparison Logic
 
+```txt
 src/
 ├── services/
 │   ├── tokenCounter.service.ts
@@ -83,9 +86,11 @@ src/
     ├── comparison.types.ts
     ├── pricing.types.ts
     └── recommendation.types.ts
+```
 
 ### Phase 3: Implement Comparison API
 
+```txt
 src/
 ├── routes/
 │   └── comparison.routes.ts
@@ -95,10 +100,11 @@ src/
 │
 └── validators/
     └── comparison.validator.ts
-
+```
 
 ### Phase 4: Add Model Pricing
 
+```txt
 src/
 ├── routes/
 │   └── pricing.routes.ts
@@ -114,10 +120,11 @@ src/
 │
 └── config/
     └── pricing.config.ts
+```
 
+### Phase 5: Add Database and History
 
-### Phase 5: Add database and History
-
+```txt
 prisma/
 ├── schema.prisma
 └── seed.ts --> puts starter data into the database
@@ -125,7 +132,7 @@ prisma/
 src/
 ├── database/
 │   ├── db.ts
-│   └── repositories/ --> responsible for talking directly to the database 
+│   └── repositories/ --> responsible for talking directly to the database
 │       ├── comparison.repository.ts
 │       └── pricing.repository.ts
 │
@@ -137,10 +144,11 @@ src/
 │
 └── services/
     └── history.service.ts
+```
 
+### Phase 6: Add Reports
 
-### Phase 6: Add reports
-
+```txt
 src/
 ├── routes/
 │   └── reports.routes.ts
@@ -155,3 +163,4 @@ src/
 └── database/
     └── repositories/
         └── report.repository.ts
+```

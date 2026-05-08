@@ -117,31 +117,31 @@ async function testComparisonWithModelPricing() {
   console.log("Status Code:", response.status);
   console.log("Response:", JSON.stringify(data, null, 2));
 
-  if (response.status !== 200 || data.success !== true) {
+  if (response.status !== 201 || data.success !== true) {
     throw new Error("Comparison with model pricing failed");
   }
 
-  if (data.data.modelId !== "gpt-4.1-mini") {
+  if (data.data.comparison.modelId !== "gpt-4.1-mini") {
     throw new Error("Comparison did not use the selected modelId");
   }
 
-  if (!data.data.cli || !data.data.mcp) {
+  if (!data.data.comparison.cli || !data.data.comparison.mcp) {
     throw new Error("Comparison response is missing cli or mcp data");
   }
 
-  if (data.data.cli.estimatedCost.modelId !== "gpt-4.1-mini") {
+  if (data.data.comparison.cli.estimatedCost.modelId !== "gpt-4.1-mini") {
     throw new Error("CLI estimated cost did not use selected model pricing");
   }
 
-  if (data.data.mcp.estimatedCost.modelId !== "gpt-4.1-mini") {
+  if (data.data.comparison.mcp.estimatedCost.modelId !== "gpt-4.1-mini") {
     throw new Error("MCP estimated cost did not use selected model pricing");
   }
 
-  if (typeof data.data.cli.estimatedCost.totalCost !== "number") {
+  if (typeof data.data.comparison.cli.estimatedCost.totalCost !== "number") {
     throw new Error("CLI totalCost should be a number");
   }
 
-  if (typeof data.data.mcp.estimatedCost.totalCost !== "number") {
+  if (typeof data.data.comparison.mcp.estimatedCost.totalCost !== "number") {
     throw new Error("MCP totalCost should be a number");
   }
 

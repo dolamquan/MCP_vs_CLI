@@ -164,3 +164,23 @@ src/
     └── repositories/
         └── report.repository.ts
 ```
+
+### Phase 7: Add CLI Functionality
+```txt
+src/
+├── routes/
+│   └── cli.routes.ts
+│
+├── controllers/
+│   └── cli.controller.ts
+│
+├── services/
+│   ├── cliRunner.service.ts
+│   └── cliSafety.service.ts
+│
+├── validators/
+│   └── cli.validator.ts
+│
+└── config/
+    └── cliSafety.config.ts
+```

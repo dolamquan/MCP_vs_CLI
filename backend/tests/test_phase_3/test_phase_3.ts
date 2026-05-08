@@ -36,11 +36,11 @@ async function testComparisonEndpoint() {
   console.log("Status Code:", response.status);
   console.log("Response:", JSON.stringify(data, null, 2));
 
-  if (response.status !== 200 || data.success !== true) {
+  if (response.status !== 201 || data.success !== true) {
     throw new Error("Comparison endpoint failed");
   }
 
-  if (!data.data.cli || !data.data.mcp || !data.data.recommendation) {
+  if (!data.data.comparison || !data.data.savedRecord) {
     throw new Error("Comparison response shape is incorrect");
   }
 

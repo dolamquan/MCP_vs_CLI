@@ -5,15 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { Textarea } from "./ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Badge } from "./ui/badge";
-import { api, ComparisonResult, PricingModel, formatUsd } from "../lib/api";
+import { api, ProfileResponse, PricingModel, formatUsd } from "../lib/api";
 
 export function AnalyzePage() {
   const [workflowType, setWorkflowType] = useState("CLI");
   const [model, setModel] = useState("");
   const [command, setCommand] = useState("");
-  const [referenceCommand, setReferenceCommand] = useState("");
   const [models, setModels] = useState<PricingModel[]>([]);
-  const [comparison, setComparison] = useState<ComparisonResult | null>(null);
+  const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -36,12 +35,8 @@ export function AnalyzePage() {
   }, []);
 
   const analyzedResult = useMemo(() => {
-    if (!comparison) {
-      return null;
-    }
-
-    return workflowType === "CLI" ? comparison.cli : comparison.mcp;
-  }, [comparison, workflowType]);
+    return profile;
+  }, [profile]);
 
   const handleAnalyze = async () => {
     if (!command.trim()) {
@@ -49,32 +44,27 @@ export function AnalyzePage() {
       return;
     }
 
-    const fallbackReference = referenceCommand.trim() || command.trim();
-
     try {
       setIsAnalyzing(true);
       setErrorMessage(null);
 
-      const payload =
+      const result =
         workflowType === "CLI"
-          ? {
-              cliCommand: command.trim(),
-              mcpCommand: fallbackReference,
+          ? await api.profileCli({
+              command: command.trim(),
               modelId: model || undefined,
-            }
-          : {
-              cliCommand: fallbackReference,
-              mcpCommand: command.trim(),
+            })
+          : await api.profileMcp({
+              command: command.trim(),
               modelId: model || undefined,
-            };
+            });
 
-      const result = await api.createComparison(payload);
-      setComparison(result.comparison);
+      setProfile(result);
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "Failed to analyze workflow."
       );
-      setComparison(null);
+      setProfile(null);
     } finally {
       setIsAnalyzing(false);
     }
@@ -82,8 +72,7 @@ export function AnalyzePage() {
 
   const handleClear = () => {
     setCommand("");
-    setReferenceCommand("");
-    setComparison(null);
+    setProfile(null);
     setErrorMessage(null);
   };
 
@@ -146,16 +135,6 @@ export function AnalyzePage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm text-gray-400">Reference Command (optional)</label>
-              <Textarea
-                value={referenceCommand}
-                onChange={(e) => setReferenceCommand(e.target.value)}
-                placeholder="Optional: provide the opposite workflow command for better comparison context"
-                className="min-h-24 bg-white/5 border-white/10 text-white placeholder:text-gray-600 font-mono"
-              />
-            </div>
-
             {errorMessage && (
               <div className="text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
                 {errorMessage}
@@ -183,7 +162,7 @@ export function AnalyzePage() {
       </motion.div>
 
       {/* Results */}
-      {analyzedResult && comparison && (
+      {analyzedResult && profile && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {[
@@ -208,9 +187,9 @@ export function AnalyzePage() {
                 color: "text-green-400",
               },
               {
-                label: "Savings Potential",
-                value: `${comparison.savings.percentageSaved.toFixed(2)}%`,
-                color: "text-green-400",
+                label: "Model",
+                value: profile.modelName,
+                color: "text-blue-400",
               },
             ].map((metric, i) => (
               <motion.div
@@ -237,12 +216,22 @@ export function AnalyzePage() {
             <Card className="bg-green-500/5 border-green-500/20">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  Recommendation
-                  <Badge className="bg-green-500 text-black">{comparison.recommendation.recommendedOption}</Badge>
+                  Profile Summary
+                  <Badge className="bg-green-500 text-black">{workflowType}</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-400">{comparison.recommendation.reason}</p>
+                <p className="text-gray-400">
+                  This {workflowType} workflow will cost approximately{" "}
+                  <span className="font-bold text-green-400">
+                    {formatUsd(analyzedResult.estimatedCost.totalCost)}
+                  </span>{" "}
+                  and use{" "}
+                  <span className="font-bold text-blue-400">
+                    {analyzedResult.estimatedTokens.toLocaleString()} tokens
+                  </span>
+                  .
+                </p>
               </CardContent>
             </Card>
           </motion.div>

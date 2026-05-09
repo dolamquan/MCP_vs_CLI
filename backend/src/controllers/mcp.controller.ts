@@ -4,6 +4,7 @@ import {
   listMcpTools
 } from "../services/mcpTool.service";
 import { profileMcpToolCall } from "../services/mcpProfiler.service";
+import { getPricingByModelId } from "../services/pricing.service";
 
 export const getMcpServers = (req: Request, res: Response) => {
   try {
@@ -44,12 +45,15 @@ export const getMcpTools = async (req: Request, res: Response) => {
 
 export const runMcpTool = async (req: Request, res: Response) => {
   try {
-    const { serverId, toolName, arguments: toolArguments } = req.body;
+    const { serverId, toolName, arguments: toolArguments, modelId } = req.body;
+    
+    const pricing = getPricingByModelId(modelId);
 
     const result = await profileMcpToolCall({
       serverId,
       toolName,
-      arguments: toolArguments
+      arguments: toolArguments,
+      modelId: pricing.modelId
     });
 
     return res.status(200).json({

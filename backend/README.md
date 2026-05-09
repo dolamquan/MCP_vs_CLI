@@ -74,3 +74,23 @@ npm start
 - `npm run test:phase6`
 
 These scripts assume the backend is already running on `http://localhost:5000`.
+
+
+
+POST /api/profiler/compare
+        ↓
+profiler.controller.ts
+        ↓
+decisionEngine.service.ts
+        ↓
+cliProfiler.service.ts      mcpProfiler.service.ts
+        ↓                    ↓
+cliRunner.service.ts         mcpTool.service.ts
+tokenCounter.service.ts      tokenCounter.service.ts
+costEstimator.service.ts     costEstimator.service.ts
+        ↓                    ↓
+return CLI profile           return MCP profile
+        ↓
+compare total tokens + cost
+        ↓
+return recommendation

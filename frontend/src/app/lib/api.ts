@@ -65,31 +65,25 @@ export type ComparisonRecord = {
   createdAt: string;
 };
 
+export type ProfileResponse = {
+  modelId: string;
+  modelName: string;
+  command: string;
+  estimatedTokens: number;
+  estimatedCost: {
+    totalCost: number;
+    inputCost: number;
+    outputCost: number;
+    inputTokens: number;
+    outputTokens: number;
+  };
+};
+
 export type ComparisonResult = {
   modelId: string;
   modelName: string;
-  cli: {
-    command: string;
-    estimatedTokens: number;
-    estimatedCost: {
-      totalCost: number;
-      inputCost: number;
-      outputCost: number;
-      inputTokens: number;
-      outputTokens: number;
-    };
-  };
-  mcp: {
-    command: string;
-    estimatedTokens: number;
-    estimatedCost: {
-      totalCost: number;
-      inputCost: number;
-      outputCost: number;
-      inputTokens: number;
-      outputTokens: number;
-    };
-  };
+  cli: ProfileResponse;
+  mcp: ProfileResponse;
   tokenDifference: number;
   costDifference: number;
   savings: {
@@ -206,15 +200,30 @@ export const api = {
       method: "DELETE",
     }),
 
-  createComparison: (payload: {
+  profileCli: (payload: {
+    command: string;
+    modelId?: string;
+  }) =>
+    request<ProfileResponse>("/profiler/cli", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  profileMcp: (payload: {
+    command: string;
+    modelId?: string;
+  }) =>
+    request<ProfileResponse>("/profiler/mcp", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  profileCompare: (payload: {
     cliCommand: string;
     mcpCommand: string;
     modelId?: string;
   }) =>
-    request<{
-      comparison: ComparisonResult;
-      savedRecord: ComparisonRecord;
-    }>("/comparisons", {
+    request<ComparisonResult>("/profiler/compare", {
       method: "POST",
       body: JSON.stringify(payload),
     }),

@@ -49,12 +49,12 @@ export function ComparePage() {
     try {
       setIsComparing(true);
       setErrorMessage(null);
-      const response = await api.createComparison({
+      const result = await api.profileCompare({
         cliCommand: cliCommand.trim(),
         mcpCommand: mcpCommand.trim(),
         modelId: modelId || undefined,
       });
-      setResult(response.comparison);
+      setResult(result);
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "Failed to compare workflows."

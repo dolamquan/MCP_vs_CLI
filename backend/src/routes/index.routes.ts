@@ -8,6 +8,7 @@ import cliRoutes from "./cli.routes";
 import mcpRoutes from "./mcp.routes";
 import settingRoutes from "./setting.routes";
 import exportRoutes from "./export.routes";
+import profilerRoutes from "./profiler.routes";
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use("/cli", cliRoutes);
 router.use("/mcp", mcpRoutes);
 router.use("/settings", settingRoutes);
 router.use("/export", exportRoutes);
+router.use("/profiler", profilerRoutes);
 
 export default router;

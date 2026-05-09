@@ -135,45 +135,44 @@ export function Dashboard() {
                 )}
 
                 {recentHistory.map((record, index) => {
-                  const isCliBest = record.recommendedOption === "CLI";
+                  const rec = record.recommendedOption;
+                  const isCliWin = rec === "CLI";
+                  const isMcpWin = rec === "MCP";
                   const bestCost = Math.min(record.cliTotalCost, record.mcpTotalCost);
+                  const iconBg = isCliWin ? "bg-blue-500/10" : isMcpWin ? "bg-purple-500/10" : "bg-green-500/10";
+                  const icon = isCliWin
+                    ? <Terminal className="w-5 h-5 text-blue-400" />
+                    : isMcpWin
+                    ? <Activity className="w-5 h-5 text-purple-400" />
+                    : <TrendingUp className="w-5 h-5 text-green-400" />;
+                  const label = isCliWin ? "CLI Command" : isMcpWin ? "MCP Command" : "Equal";
+                  const previewCmd = isCliWin ? record.cliCommand : record.mcpCommand;
+                  const previewTokens = isCliWin ? record.cliTokens : record.mcpTokens;
 
                   return (
                     <div
                       key={record.id}
-                      className={`flex items-start justify-between ${
+                      className={`flex items-start justify-between gap-4 ${
                         index < recentHistory.length - 1
                           ? "pb-8 border-b border-white/5"
                           : ""
                       }`}
                     >
-                      <div className="flex gap-4 flex-1">
-                        <div
-                          className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                            isCliBest ? "bg-blue-500/10" : "bg-purple-500/10"
-                          }`}
-                        >
-                          {isCliBest ? (
-                            <Terminal className="w-5 h-5 text-blue-400" />
-                          ) : (
-                            <Activity className="w-5 h-5 text-purple-400" />
-                          )}
+                      <div className="flex gap-4 flex-1 min-w-0">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+                          {icon}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm mb-1">
-                            {isCliBest ? "CLI Command" : "MCP Command"}
-                          </div>
-                          <code className="text-xs text-gray-500 block truncate">
-                            {isCliBest ? record.cliCommand : record.mcpCommand}
+                        <div className="flex-1 min-w-0 overflow-hidden">
+                          <div className="text-sm mb-1">{label}</div>
+                          <code className="text-xs text-gray-500 block overflow-hidden text-ellipsis whitespace-nowrap">
+                            {previewCmd}
                           </code>
                           <div className="text-xs text-gray-600 mt-2">
-                            {isCliBest
-                              ? record.cliTokens.toLocaleString()
-                              : record.mcpTokens.toLocaleString()} tokens
+                            {previewTokens.toLocaleString()} tokens
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right flex-shrink-0">
                         <div className="text-lg mb-1">{formatUsd(bestCost)}</div>
                         <div className="text-xs text-green-400 flex items-center justify-end gap-1">
                           <TrendingUp className="w-3 h-3" />
@@ -273,7 +272,7 @@ export function Dashboard() {
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-purple-500" />
-                      <span className="text-gray-400">Other</span>
+                      <span className="text-gray-400">Equal</span>
                     </div>
                     <span>{summary.recommendationBreakdown.Equal}</span>
                   </div>

@@ -1,0 +1,5 @@
+export const TOKENS_PER_MILLION = 1_000_000;
+
+export const DEFAULT_OUTPUT_TOKEN_RATIO = 0.3;
+
+export const COST_DECIMAL_PLACES = 8;

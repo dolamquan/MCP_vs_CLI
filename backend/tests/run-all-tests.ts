@@ -6,9 +6,10 @@ const phaseTests = [
   "tests/test_phase_3/test_phase_3.ts",
   "tests/test_phase_4/test_phase_4.ts",
   "tests/test_phase_5/test_phase_5.ts",
-  "tests/test_phase_6/test-phase6.ts",
-  "tests/test_phase_7/test-phase7.ts",
-  "tests/test_phase_8/test_phase_8.ts"
+  "tests/test_phase_6/test_phase_6.ts",
+  "tests/test_phase_7/test_phase_7.ts",
+  "tests/test_phase_8/test_phase_8.ts",
+  "tests/test_phase_9/test_phase_9.ts"
 ];
 
 const runTestFile = (relativeFilePath: string) => {

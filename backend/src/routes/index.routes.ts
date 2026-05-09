@@ -6,6 +6,8 @@ import historyRoutes from "./history.routes";
 import reportsRoutes from "./reports.routes";
 import cliRoutes from "./cli.routes";
 import mcpRoutes from "./mcp.routes";
+import settingRoutes from "./setting.routes";
+import exportRoutes from "./export.routes";
 
 const router = Router();
 
@@ -16,5 +18,7 @@ router.use("/history", historyRoutes);
 router.use("/reports", reportsRoutes);
 router.use("/cli", cliRoutes);
 router.use("/mcp", mcpRoutes);
+router.use("/settings", settingRoutes);
+router.use("/export", exportRoutes);
 
 export default router;

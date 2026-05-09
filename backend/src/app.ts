@@ -1,10 +1,20 @@
 import express from "express";
 import cors from "cors";
 import routes from "./routes/index.routes";
+import { loggerMiddleware } from "./middleware/logger.middleware";
+import { notFoundMiddleware } from "./middleware/notFound.middleware";
+import { errorMiddleware } from "./middleware/error.middleware";
 
 const app = express();
 
-app.use(cors()); // Lets backend accept requests from a frontend running on a different origin
+app.use(cors());
 app.use(express.json());
-app.use("/api", routes); // Prefix all routes with /api
+
+app.use(loggerMiddleware);
+
+app.use("/api", routes);
+
+app.use(notFoundMiddleware);
+app.use(errorMiddleware);
+
 export default app;

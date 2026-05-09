@@ -9,6 +9,8 @@ import mcpRoutes from "./mcp.routes";
 import settingRoutes from "./setting.routes";
 import exportRoutes from "./export.routes";
 import profilerRoutes from "./profiler.routes";
+import registryRoutes from "./registry.routes";
+import agentRoutes from "./agent.routes";
 
 const router = Router();
 
@@ -22,5 +24,7 @@ router.use("/mcp", mcpRoutes);
 router.use("/settings", settingRoutes);
 router.use("/export", exportRoutes);
 router.use("/profiler", profilerRoutes);
+router.use("/registry", registryRoutes);
+router.use("/agent", agentRoutes);
 
 export default router;

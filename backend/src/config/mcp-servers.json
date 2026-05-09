@@ -1,0 +1,49 @@
+{
+  "servers": [
+    {
+      "serverId": "filesystem-local",
+      "serverName": "Local Filesystem MCP",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "{{cwd}}"
+      ],
+      "enabled": true
+    },
+    {
+      "serverId": "git-local",
+      "serverName": "Local Git MCP",
+      "transport": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-server-git",
+        "--repository",
+        "{{env.GIT_REPOSITORY_PATH}}"
+      ],
+      "enabled": false
+    },
+    {
+      "serverId": "github",
+      "serverName": "GitHub MCP",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "{{env.GITHUB_PERSONAL_ACCESS_TOKEN}}"
+      },
+      "enabled": false
+    },
+    {
+      "serverId": "local-http",
+      "serverName": "Local HTTP MCP Server",
+      "transport": "http",
+      "url": "http://localhost:7000/mcp",
+      "enabled": false
+    }
+  ]
+}

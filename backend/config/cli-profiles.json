@@ -1,0 +1,28 @@
+{
+  "profiles": [
+    {
+      "id": "node-version",
+      "name": "Node Version",
+      "description": "Check the installed Node.js version.",
+      "category": "runtime",
+      "commandTemplate": "node --version",
+      "variables": []
+    },
+    {
+      "id": "git-status",
+      "name": "Git Status",
+      "description": "Check current Git repository status.",
+      "category": "git",
+      "commandTemplate": "git status",
+      "variables": []
+    },
+    {
+      "id": "search-typescript",
+      "name": "Search TypeScript Files",
+      "description": "Search for a term inside TypeScript files.",
+      "category": "search",
+      "commandTemplate": "findstr /S /I {{query}} src\\*.ts",
+      "variables": ["query"]
+    }
+  ]
+}

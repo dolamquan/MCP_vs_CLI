@@ -2,7 +2,7 @@
 
 Calculate and compare token usage and cost between CLI and MCP command workflows.
 
-![Landing Page Preview](assets/landing_page.png)
+![Landing Page Preview](asset/landing_page.png)
 
 ## Project Structure
 

@@ -1,0 +1,9 @@
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/dev.db
+backend/.uv-cache/
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+npm-debug.log*

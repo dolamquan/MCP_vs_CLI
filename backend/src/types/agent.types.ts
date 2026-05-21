@@ -51,6 +51,17 @@ export interface AgentAdvice {
   fallbackActionId: string | null;
 }
 
+export interface AgentExecutionPolicy {
+  primaryActionId: string | null;
+  fallbackActionId: string | null;
+  retryOnFailure: boolean;
+  shouldAvoidFailedActions: boolean;
+  overrideAllowed: boolean;
+  overrideReasons: string[];
+  failedActionIds: string[];
+  policySummary: string;
+}
+
 export interface AgentRecommendationResult {
   task: string;
   recommendedActionId: string | null;
@@ -59,5 +70,6 @@ export interface AgentRecommendationResult {
   confidence: AgentConfidence;
   difference: AgentRecommendationDifference;
   agentAdvice: AgentAdvice;
+  executionPolicy: AgentExecutionPolicy;
   actions: AgentActionProfile[];
 }

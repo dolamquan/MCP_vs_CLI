@@ -1,6 +1,7 @@
 import {
   AgentActionProfile,
   AgentConfidence,
+  AgentExecutionPolicy,
   AgentRecommendationDifference,
   AgentRecommendationResult
 } from "../types/agent.types";
@@ -13,6 +14,12 @@ const getSuccessfulActions = (
   actions: AgentActionProfile[]
 ): AgentActionProfile[] => {
   return actions.filter((action) => action.status === "success");
+};
+
+const getFailedActions = (
+  actions: AgentActionProfile[]
+): AgentActionProfile[] => {
+  return actions.filter((action) => action.status === "failed");
 };
 
 const sortActionsByEfficiency = (
@@ -63,10 +70,15 @@ const buildDifference = (
 
 export const calculateAgentConfidence = (
   difference: AgentRecommendationDifference,
-  successfulActionCount: number
+  successfulActionCount: number,
+  failedActionCount: number
 ): AgentConfidence => {
   if (successfulActionCount === 0) {
     return "low";
+  }
+
+  if (successfulActionCount === 1 && failedActionCount > 0) {
+    return "medium";
   }
 
   if (successfulActionCount === 1) {
@@ -87,10 +99,15 @@ export const calculateAgentConfidence = (
 const buildReason = (
   recommendedAction: AgentActionProfile | null,
   secondBestAction: AgentActionProfile | null,
-  difference: AgentRecommendationDifference
+  difference: AgentRecommendationDifference,
+  failedActions: AgentActionProfile[]
 ): string => {
   if (!recommendedAction) {
     return "No candidate action completed successfully.";
+  }
+
+  if (!secondBestAction && failedActions.length > 0) {
+    return `Action "${recommendedAction.id}" was selected because it was the only candidate that completed successfully. ${failedActions.length} candidate action(s) failed.`;
   }
 
   if (!secondBestAction) {
@@ -112,13 +129,23 @@ const buildAgentAdvice = (
   recommendedAction: AgentActionProfile | null,
   secondBestAction: AgentActionProfile | null,
   confidence: AgentConfidence,
-  difference: AgentRecommendationDifference
+  difference: AgentRecommendationDifference,
+  failedActions: AgentActionProfile[]
 ) => {
   if (!recommendedAction) {
     return {
       shouldUseRecommended: false,
       summary:
         "Do not use any candidate action yet. All candidate actions failed during profiling.",
+      fallbackActionId: null
+    };
+  }
+
+  if (!secondBestAction && failedActions.length > 0) {
+    return {
+      shouldUseRecommended: true,
+      summary:
+        "Use the only successful action. Avoid the failed candidate actions unless the result is incomplete.",
       fallbackActionId: null
     };
   }
@@ -158,13 +185,144 @@ const buildAgentAdvice = (
   };
 };
 
+const buildExecutionPolicy = (
+  recommendedAction: AgentActionProfile | null,
+  secondBestAction: AgentActionProfile | null,
+  failedActions: AgentActionProfile[],
+  confidence: AgentConfidence,
+  difference: AgentRecommendationDifference
+): AgentExecutionPolicy => {
+  const failedActionIds = failedActions.map((action) => action.id);
+
+  if (!recommendedAction) {
+    return {
+      primaryActionId: null,
+      fallbackActionId: null,
+      retryOnFailure: false,
+      shouldAvoidFailedActions: true,
+      overrideAllowed: true,
+      overrideReasons: [
+        "All candidate actions failed.",
+        "The agent should generate safer or narrower candidate actions.",
+        "The agent may ask the user for clarification if the task is ambiguous."
+      ],
+      failedActionIds,
+      policySummary:
+        "Do not execute any recommended action because all candidates failed."
+    };
+  }
+
+  if (!secondBestAction && failedActions.length > 0) {
+    return {
+      primaryActionId: recommendedAction.id,
+      fallbackActionId: null,
+      retryOnFailure: false,
+      shouldAvoidFailedActions: true,
+      overrideAllowed: true,
+      overrideReasons: [
+        "The primary action returns incomplete output.",
+        "The primary action does not answer the task.",
+        "A failed action may be retried only with narrower arguments or a safer command."
+      ],
+      failedActionIds,
+      policySummary:
+        "Use the only successful action first. Avoid failed actions unless the successful result is incomplete."
+    };
+  }
+
+  if (!secondBestAction) {
+    return {
+      primaryActionId: recommendedAction.id,
+      fallbackActionId: null,
+      retryOnFailure: true,
+      shouldAvoidFailedActions: false,
+      overrideAllowed: true,
+      overrideReasons: [
+        "Only one candidate action was available.",
+        "The primary action returns incomplete output.",
+        "The task requires information not covered by the primary action."
+      ],
+      failedActionIds,
+      policySummary:
+        "Use the recommended action. Generate a new fallback if it fails or produces incomplete output."
+    };
+  }
+
+  if (confidence === "high") {
+    return {
+      primaryActionId: recommendedAction.id,
+      fallbackActionId: secondBestAction.id,
+      retryOnFailure: true,
+      shouldAvoidFailedActions: failedActions.length > 0,
+      overrideAllowed: true,
+      overrideReasons: [
+        "The primary action fails.",
+        "The primary action returns incomplete output.",
+        "The fallback provides better semantic structure or reliability despite higher token cost."
+      ],
+      failedActionIds,
+      policySummary:
+        "Use the recommended action first. Use the fallback only if the primary action fails or gives incomplete output."
+    };
+  }
+
+  if (confidence === "medium") {
+    return {
+      primaryActionId: recommendedAction.id,
+      fallbackActionId: secondBestAction.id,
+      retryOnFailure: true,
+      shouldAvoidFailedActions: failedActions.length > 0,
+      overrideAllowed: true,
+      overrideReasons: [
+        "The fallback is more reliable for this task.",
+        "The primary action gives incomplete output.",
+        "The token savings are moderate, so quality may justify using the fallback."
+      ],
+      failedActionIds,
+      policySummary:
+        "Use the recommended action first, but the fallback is also reasonable if output quality matters."
+    };
+  }
+
+  return {
+    primaryActionId: recommendedAction.id,
+    fallbackActionId: secondBestAction.id,
+    retryOnFailure: true,
+    shouldAvoidFailedActions: failedActions.length > 0,
+    overrideAllowed: true,
+    overrideReasons: [
+      "The token savings are small.",
+      "The fallback is more reliable or easier to interpret.",
+      "The primary action output is incomplete or noisy."
+    ],
+    failedActionIds,
+    policySummary:
+      difference.tokenDifference > 0
+        ? "Use the recommended action, but either successful option is acceptable because the savings are small."
+        : "The top actions are effectively tied. Choose based on reliability, completeness, or output quality."
+  };
+};
+
 export const buildAgentRecommendationResponse = (
   task: string,
   actions: AgentActionProfile[]
 ): AgentRecommendationResult => {
   const successfulActions = getSuccessfulActions(actions);
+  const failedActions = getFailedActions(actions);
 
   if (successfulActions.length === 0) {
+    const executionPolicy = buildExecutionPolicy(
+      null,
+      null,
+      failedActions,
+      "low",
+      {
+        tokenDifference: 0,
+        percentageSaved: 0,
+        costDifference: 0
+      }
+    );
+
     return {
       task,
       recommendedActionId: null,
@@ -182,6 +340,7 @@ export const buildAgentRecommendationResponse = (
           "No action should be used because all candidate actions failed during profiling.",
         fallbackActionId: null
       },
+      executionPolicy,
       actions
     };
   }
@@ -195,22 +354,40 @@ export const buildAgentRecommendationResponse = (
 
   const confidence = calculateAgentConfidence(
     difference,
-    successfulActions.length
+    successfulActions.length,
+    failedActions.length
+  );
+
+  const agentAdvice = buildAgentAdvice(
+    recommendedAction,
+    secondBestAction,
+    confidence,
+    difference,
+    failedActions
+  );
+
+  const executionPolicy = buildExecutionPolicy(
+    recommendedAction,
+    secondBestAction,
+    failedActions,
+    confidence,
+    difference
   );
 
   return {
     task,
     recommendedActionId: recommendedAction.id,
     recommendedType: recommendedAction.type,
-    reason: buildReason(recommendedAction, secondBestAction, difference),
-    confidence,
-    difference,
-    agentAdvice: buildAgentAdvice(
+    reason: buildReason(
       recommendedAction,
       secondBestAction,
-      confidence,
-      difference
+      difference,
+      failedActions
     ),
+    confidence,
+    difference,
+    agentAdvice,
+    executionPolicy,
     actions
   };
 };

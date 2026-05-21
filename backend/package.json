@@ -18,7 +18,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
-    "dev:mcp": "ts-node-dev --transpile-only src/mcpServer.ts",
+    "dev:mcp": "tsx src/mcpServer.ts",
     "start:mcp": "node dist/mcpServer.js",
     "seed": "tsx prisma/seed.ts",
     "build": "tsc",

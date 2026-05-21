@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "cli-vs-mcp-advisor": {
+      "command": "cmd",
+      "args": ["/c", "node_modules\\.bin\\tsx.cmd", "src/mcpServer.ts"],
+      "cwd": "c:\\Users\\jackd\\OneDrive\\Documents\\Projects\\MCP - Server\\CLI_vs_MCP\\backend"
+    }
+  }
+}
